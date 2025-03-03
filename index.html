@@ -3,1080 +3,1785 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Advanced Adaptive Scientific Calculator</title>
-    <link rel="manifest" href="#manifest">
-    <meta name="theme-color" content="#317EFB">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjs/11.5.0/math.min.js"></script>
+    <title>Calculator</title>
     <style>
-        :root {
-            --primary-bg: #f8f9fa;
-            --secondary-bg: #e9ecef;
-            --button-bg: #dee2e6;
-            --button-hover: #ced4da;
-            --text-color: #212529;
-            --accent-color: #3a86ff;
-            --operator-color: #ff9e00;
-            --function-color: #8338ec;
-            --history-bg: #e9ecef;
-            --border-radius: 8px;
-            --font-family: 'Roboto', sans-serif;
-            --button-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-        }
-
-        [data-theme="dark"] {
-            --primary-bg: #212529;
-            --secondary-bg: #343a40;
-            --button-bg: #495057;
-            --button-hover: #6c757d;
-            --text-color: #f8f9fa;
-            --accent-color: #5390ff;
-            --operator-color: #ffae2b;
-            --function-color: #9d67e6;
-            --history-bg: #343a40;
-        }
-
-        [data-theme="blue"] {
-            --primary-bg: #e6f2ff;
-            --secondary-bg: #cce4ff;
-            --button-bg: #99caff;
-            --button-hover: #66a3ff;
-            --text-color: #00366b;
-            --accent-color: #0066cc;
-            --operator-color: #0099ff;
-            --function-color: #003d99;
-            --history-bg: #cce4ff;
-        }
-
-        [data-theme="green"] {
-            --primary-bg: #e6fff2;
-            --secondary-bg: #ccffe6;
-            --button-bg: #99ffcc;
-            --button-hover: #66ffa3;
-            --text-color: #00663d;
-            --accent-color: #00cc7a;
-            --operator-color: #00994d;
-            --function-color: #006633;
-            --history-bg: #ccffe6;
-        }
-
-        [data-theme="high-contrast"] {
-            --primary-bg: #000000;
-            --secondary-bg: #1a1a1a;
-            --button-bg: #333333;
-            --button-hover: #4d4d4d;
-            --text-color: #ffffff;
-            --accent-color: #ffff00;
-            --operator-color: #ff6600;
-            --function-color: #00ffff;
-            --history-bg: #1a1a1a;
-            --button-shadow: 0 0 8px rgba(255, 255, 255, 0.5);
-        }
-
-        @font-face {
-            font-family: 'CalculatorFont';
-            src: url('https://fonts.gstatic.com/s/roboto/v30/KFOmCnqEu92Fr1Mu4mxK.woff2') format('woff2');
+        /* Base Styles */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            transition: background-color 0.3s, color 0.3s, border-color 0.3s;
         }
 
         body {
-            font-family: var(--font-family);
-            background-color: var(--primary-bg);
-            color: var(--text-color);
-            margin: 0;
-            padding: 20px;
-            transition: background-color 0.3s, color 0.3s;
+            font-family: 'Roboto', sans-serif;
+            display: flex;
+            flex-direction: column;
             min-height: 100vh;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
         }
 
+        /* Header Styles */
+        header {
+            background-color: #4CAF50;
+            color: white;
+            padding: 15px;
+            text-align: center;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        }
+
+        /* Navigation Styles */
+        nav {
+            background-color: #f8f8f8;
+            border-bottom: 1px solid #ddd;
+            display: flex;
+            overflow-x: auto;
+            white-space: nowrap;
+        }
+
+        nav button {
+            background: none;
+            border: none;
+            padding: 12px 20px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        nav button:hover {
+            background-color: #ececec;
+        }
+
+        nav button.active {
+            background-color: #e0e0e0;
+            font-weight: bold;
+            border-bottom: 3px solid #4CAF50;
+        }
+
+        /* Container Styles */
         .container {
+            flex: 1;
             display: flex;
             flex-direction: column;
-            width: 100%;
-            max-width: 1000px;
+            max-width: 1200px;
             margin: 0 auto;
-        }
-
-        @media (min-width: 768px) {
-            .container {
-                flex-direction: row;
-                gap: 20px;
-            }
-        }
-
-        .calculator {
-            background-color: var(--secondary-bg);
-            border-radius: var(--border-radius);
             padding: 20px;
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            width: 100%;
+        }
+
+        /* Calculator Section Styles */
+        .calculator-section {
+            display: none;
+            flex-direction: column;
             flex: 1;
-            margin-bottom: 20px;
+        }
+
+        .calculator-section.active {
+            display: flex;
+        }
+
+        /* Basic Calculator Styles */
+        .calculator {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            grid-gap: 10px;
+            margin-top: 20px;
+            max-width: 400px;
         }
 
         .display {
-            background-color: var(--primary-bg);
-            padding: 15px;
-            margin-bottom: 15px;
-            border-radius: var(--border-radius);
+            grid-column: 1 / span 5;
+            background-color: #f4f4f4;
+            padding: 20px;
             text-align: right;
-            font-size: 1.8rem;
-            min-height: 60px;
-            overflow-x: auto;
-            white-space: nowrap;
-            box-shadow: inset 0 1px 5px rgba(0, 0, 0, 0.1);
-            display: flex;
-            flex-direction: column;
-            align-items: flex-end;
+            font-size: 24px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            margin-bottom: 10px;
         }
 
-        .expression {
-            font-size: 1rem;
-            color: var(--text-color);
-            opacity: 0.7;
-            margin-bottom: 5px;
-            min-height: 1rem;
+        .calculator button {
+            padding: 15px;
+            font-size: 18px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            background-color: white;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        .calculator button:hover {
+            background-color: #f0f0f0;
+        }
+
+        .calculator button.operator {
+            background-color: #f8f8f8;
+        }
+
+        .calculator button.equals {
+            background-color: #4CAF50;
+            color: white;
+        }
+
+        /* Fraction Calculator Styles */
+        .fraction-calculator {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            max-width: 600px;
+        }
+
+        .fraction-sections {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .fraction-section {
+            display: none;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .fraction-section.active {
+            display: flex;
+        }
+
+        .operation-buttons {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+
+        .operation-buttons button {
+            padding: 10px 15px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            background-color: white;
+            cursor: pointer;
+            flex: 1;
+            min-width: 100px;
+        }
+
+        .operation-buttons button.active {
+            background-color: #4CAF50;
+            color: white;
+        }
+
+        .fraction-input {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .fraction-input input {
+            width: 80px;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+
+        .calculate-btn {
+            padding: 10px 15px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
         }
 
         .result {
-            font-size: 1.8rem;
-            font-weight: bold;
+            margin-top: 10px;
+            padding: 15px;
+            background-color: #f4f4f4;
+            border-radius: 5px;
+            font-size: 18px;
         }
 
-        .buttons {
-            display: grid;
-            grid-template-columns: repeat(5, 1fr);
+        /* Percentage Calculator Styles */
+        .percentage-calculator {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            max-width: 600px;
+        }
+
+        .percentage-sections {
+            display: flex;
+            flex-direction: column;
             gap: 10px;
         }
 
-        button {
-            padding: 15px 10px;
-            font-size: 1.2rem;
-            background-color: var(--button-bg);
-            border: none;
-            border-radius: var(--border-radius);
-            cursor: pointer;
-            color: var(--text-color);
-            transition: 0.2s;
-            box-shadow: var(--button-shadow);
-            font-family: inherit;
+        .percentage-section {
+            display: none;
+            flex-direction: column;
+            gap: 10px;
         }
 
-        button:hover, button:focus {
-            background-color: var(--button-hover);
-            transform: translateY(-2px);
+        .percentage-section.active {
+            display: flex;
         }
 
-        button:active {
-            transform: translateY(1px);
+        .percentage-input {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex-wrap: wrap;
         }
 
-        .operator {
-            background-color: var(--operator-color);
-            color: var(--primary-bg);
+        .percentage-input input {
+            width: 100px;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
         }
 
-        .function {
-            background-color: var(--function-color);
-            color: var(--primary-bg);
-            font-size: 1rem;
-        }
-
-        .equals {
-            background-color: var(--accent-color);
-            color: var(--primary-bg);
-        }
-
-        .history-panel {
-            background-color: var(--history-bg);
-            border-radius: var(--border-radius);
-            padding: 20px;
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-            flex: 0 0 300px;
-            max-height: 80vh;
-            overflow-y: auto;
+        /* Sequence Calculator Styles */
+        .sequence-calculator {
             display: flex;
             flex-direction: column;
+            gap: 20px;
+            max-width: 600px;
         }
 
-        .history-title {
-            font-size: 1.3rem;
-            margin-bottom: 15px;
-            text-align: center;
-            border-bottom: 1px solid var(--text-color);
-            padding-bottom: 10px;
+        .sequence-inputs {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
         }
 
-        .history-empty {
-            text-align: center;
-            opacity: 0.7;
-            font-style: italic;
+        .input-group {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+
+        .input-group label {
+            font-weight: bold;
+        }
+
+        .input-group input {
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+
+        .sequence-results {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            background-color: #f4f4f4;
+            padding: 15px;
+            border-radius: 5px;
+        }
+
+        /* History Styles */
+        .history {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .history-list {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            max-height: 400px;
+            overflow-y: auto;
         }
 
         .history-item {
-            background-color: var(--primary-bg);
             padding: 10px;
-            margin-bottom: 10px;
-            border-radius: var(--border-radius);
-            cursor: pointer;
-            transition: 0.2s;
+            background-color: #f4f4f4;
+            border-radius: 5px;
         }
 
-        .history-item:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-        }
-
-        .history-expression {
-            font-size: 0.9rem;
-            margin-bottom: 5px;
-            overflow-wrap: break-word;
-        }
-
-        .history-result {
-            font-size: 1.1rem;
-            font-weight: bold;
-            text-align: right;
-        }
-
-        .history-clear {
-            margin-top: auto;
-            padding: 8px;
-            background-color: var(--button-bg);
+        .clear-history {
+            padding: 10px 15px;
+            background-color: #f44336;
+            color: white;
             border: none;
-            border-radius: var(--border-radius);
+            border-radius: 5px;
             cursor: pointer;
-            transition: 0.2s;
-            margin-top: 10px;
+            align-self: flex-start;
         }
 
-        .settings-panel {
-            background-color: var(--secondary-bg);
-            border-radius: var(--border-radius);
-            padding: 20px;
-            margin-top: 20px;
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+        /* Settings Styles */
+        .settings {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .theme-selector {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .theme-dropdown {
+            position: relative;
+            max-width: 300px;
+        }
+
+        .theme-select {
             width: 100%;
+            padding: 12px 15px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            appearance: none;
+            cursor: pointer;
+            background-color: white;
+            font-size: 16px;
         }
 
-        .settings-title {
-            font-size: 1.3rem;
-            margin-bottom: 15px;
-            text-align: center;
-            border-bottom: 1px solid var(--text-color);
-            padding-bottom: 10px;
+        /* Replace double triangles with a custom icon */
+        .theme-dropdown::after {
+            content: "⚙️"; /* Gear icon instead of triangles */
+            position: absolute;
+            right: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            pointer-events: none;
         }
 
         .theme-options {
-            display: flex;
-            flex-wrap: wrap;
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
             gap: 10px;
-            margin-bottom: 20px;
-            justify-content: center;
+            margin-top: 20px;
         }
 
         .theme-option {
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
             cursor: pointer;
-            border: 2px solid transparent;
-            transition: 0.2s;
+            text-align: center;
+            transition: transform 0.2s;
         }
 
-        .theme-option.active {
-            border: 2px solid var(--accent-color);
-            transform: scale(1.1);
+        .theme-option:hover {
+            transform: scale(1.05);
         }
 
-        .light-theme {
-            background: linear-gradient(to bottom right, #f8f9fa, #e9ecef);
-        }
-
-        .dark-theme {
-            background: linear-gradient(to bottom right, #212529, #343a40);
-        }
-
-        .blue-theme {
-            background: linear-gradient(to bottom right, #e6f2ff, #99caff);
-        }
-
-        .green-theme {
-            background: linear-gradient(to bottom right, #e6fff2, #99ffcc);
-        }
-
-        .high-contrast-theme {
-            background: linear-gradient(to bottom right, #000, #333);
-            border: 2px solid #fff;
-        }
-
-        .font-options, .button-style-options {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 10px;
-            margin-bottom: 20px;
-            justify-content: center;
-        }
-
-        .font-option, .button-style-option {
-            padding: 8px 12px;
-            background-color: var(--button-bg);
-            border-radius: var(--border-radius);
-            cursor: pointer;
-            transition: 0.2s;
-        }
-
-        .font-option.active, .button-style-option.active {
-            background-color: var(--accent-color);
-            color: var(--primary-bg);
-        }
-
-        .roboto {
-            font-family: 'Roboto', sans-serif;
-        }
-
-        .open-sans {
-            font-family: 'Open Sans', sans-serif;
-        }
-
-        .montserrat {
-            font-family: 'Montserrat', sans-serif;
-        }
-
-        .calculator-font {
-            font-family: 'CalculatorFont', monospace;
-        }
-
-        @media (max-width: 600px) {
-            .buttons {
+        /* Responsive Styles */
+        @media (max-width: 768px) {
+            .calculator {
                 grid-template-columns: repeat(4, 1fr);
             }
-            
-            .function {
-                font-size: 0.8rem;
+
+            .display {
+                grid-column: 1 / span 4;
+            }
+
+            .theme-options {
+                grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
             }
         }
 
-        .button-rounded {
-            border-radius: 50%;
+        @media (max-width: 480px) {
+            .calculator {
+                grid-template-columns: repeat(4, 1fr);
+                grid-gap: 5px;
+            }
+
+            .calculator button {
+                padding: 10px;
+                font-size: 16px;
+            }
+
+            .theme-options {
+                grid-template-columns: repeat(2, 1fr);
+            }
         }
 
-        .button-square {
-            border-radius: 3px;
+        /* Theme Styles */
+        /* Default Theme */
+        .theme-default {
+            --bg-color: #ffffff;
+            --text-color: #333333;
+            --header-bg: #4CAF50;
+            --header-text: #ffffff;
+            --btn-bg: #ffffff;
+            --btn-text: #333333;
+            --accent-color: #4CAF50;
+            --font-family: 'Roboto', sans-serif;
         }
 
-        .header {
-            width: 100%;
-            text-align: center;
-            margin-bottom: 20px;
+        /* Dark Theme */
+        .theme-dark {
+            --bg-color: #222222;
+            --text-color: #f0f0f0;
+            --header-bg: #333333;
+            --header-text: #f0f0f0;
+            --btn-bg: #444444;
+            --btn-text: #f0f0f0;
+            --accent-color: #7E57C2;
+            --font-family: 'Montserrat', sans-serif;
         }
 
-        .title {
-            font-size: 2rem;
-            font-weight: bold;
-            margin-bottom: 10px;
+        /* Nature Theme */
+        .theme-nature {
+            --bg-color: #f5f9f0;
+            --text-color: #2c3e1f;
+            --header-bg: #5c9b4c;
+            --header-text: #ffffff;
+            --btn-bg: #dcebc5;
+            --btn-text: #2c3e1f;
+            --accent-color: #5c9b4c;
+            --font-family: 'Quicksand', sans-serif;
         }
 
-        .subtitle {
-            font-size: 1rem;
-            opacity: 0.8;
+        /* Sunset Theme */
+        .theme-sunset {
+            --bg-color: #fff4e8;
+            --text-color: #783c00;
+            --header-bg: #ff7b00;
+            --header-text: #ffffff;
+            --btn-bg: #ffead0;
+            --btn-text: #783c00;
+            --accent-color: #ff7b00;
+            --font-family: 'Poppins', sans-serif;
         }
 
-        /* Accessibility focus styles */
-        button:focus, .history-item:focus, .theme-option:focus, 
-        .font-option:focus, .button-style-option:focus {
-            outline: 3px solid var(--accent-color);
-            outline-offset: 2px;
+        /* Ocean Theme */
+        .theme-ocean {
+            --bg-color: #e7f5fb;
+            --text-color: #004d70;
+            --header-bg: #0288d1;
+            --header-text: #ffffff;
+            --btn-bg: #c7e8fa;
+            --btn-text: #004d70;
+            --accent-color: #0288d1;
+            --font-family: 'Lato', sans-serif;
         }
 
-        .sr-only {
-            position: absolute;
-            width: 1px;
-            height: 1px;
-            padding: 0;
-            margin: -1px;
-            overflow: hidden;
-            clip: rect(0, 0, 0, 0);
-            white-space: nowrap;
-            border-width: 0;
+        /* Lavender Theme */
+        .theme-lavender {
+            --bg-color: #f5f0ff;
+            --text-color: #47336b;
+            --header-bg: #916dd5;
+            --header-text: #ffffff;
+            --btn-bg: #e6dbff;
+            --btn-text: #47336b;
+            --accent-color: #916dd5;
+            --font-family: 'Source Sans Pro', sans-serif;
+        }
+
+        /* Cherry Theme */
+        .theme-cherry {
+            --bg-color: #fff0f5;
+            --text-color: #7c002e;
+            --header-bg: #e91e63;
+            --header-text: #ffffff;
+            --btn-bg: #ffd0e0;
+            --btn-text: #7c002e;
+            --accent-color: #e91e63;
+            --font-family: 'Raleway', sans-serif;
+        }
+
+        /* Coffee Theme */
+        .theme-coffee {
+            --bg-color: #f5f1eb;
+            --text-color: #4a3520;
+            --header-bg: #795548;
+            --header-text: #ffffff;
+            --btn-bg: #e8dfd5;
+            --btn-text: #4a3520;
+            --accent-color: #795548;
+            --font-family: 'Ubuntu', sans-serif;
+        }
+
+        /* Mint Theme */
+        .theme-mint {
+            --bg-color: #f0f9f5;
+            --text-color: #00695c;
+            --header-bg: #00bfa5;
+            --header-text: #ffffff;
+            --btn-bg: #d0f0e6;
+            --btn-text: #00695c;
+            --accent-color: #00bfa5;
+            --font-family: 'Nunito', sans-serif;
+        }
+
+        /* Berry Theme */
+        .theme-berry {
+            --bg-color: #faf0f5;
+            --text-color: #880e4f;
+            --header-bg: #ad1457;
+            --header-text: #ffffff;
+            --btn-bg: #f8d0e0;
+            --btn-text: #880e4f;
+            --accent-color: #ad1457;
+            --font-family: 'Mulish', sans-serif;
+        }
+
+        /* Slate Theme */
+        .theme-slate {
+            --bg-color: #eceff1;
+            --text-color: #263238;
+            --header-bg: #455a64;
+            --header-text: #ffffff;
+            --btn-bg: #cfd8dc;
+            --btn-text: #263238;
+            --accent-color: #455a64;
+            --font-family: 'Open Sans', sans-serif;
+        }
+
+        /* Retro Theme */
+        .theme-retro {
+            --bg-color: #f5f5dc;
+            --text-color: #8b4513;
+            --header-bg: #cd853f;
+            --header-text: #ffffff;
+            --btn-bg: #e8e8c8;
+            --btn-text: #8b4513;
+            --accent-color: #cd853f;
+            --font-family: 'VT323', monospace;
+        }
+
+        /* Futuristic Theme */
+        .theme-futuristic {
+            --bg-color: #e8f0fe;
+            --text-color: #01579b;
+            --header-bg: #2196f3;
+            --header-text: #ffffff;
+            --btn-bg: #bbdefb;
+            --btn-text: #01579b;
+            --accent-color: #2196f3;
+            --font-family: 'Orbitron', sans-serif;
+        }
+
+        /* Pastel Theme */
+        .theme-pastel {
+            --bg-color: #f8f6ff;
+            --text-color: #6a4c93;
+            --header-bg: #b39ddb;
+            --header-text: #ffffff;
+            --btn-bg: #e1d9f5;
+            --btn-text: #6a4c93;
+            --accent-color: #b39ddb;
+            --font-family: 'Comfortaa', cursive;
+        }
+
+        /* Neon Theme */
+        .theme-neon {
+            --bg-color: #0d0d0d;
+            --text-color: #00ff00;
+            --header-bg: #330033;
+            --header-text: #ff00ff;
+            --btn-bg: #1a1a1a;
+            --btn-text: #00ff00;
+            --accent-color: #ff00ff;
+            --font-family: 'Audiowide', cursive;
+        }
+
+        /* Autumn Theme */
+        .theme-autumn {
+            --bg-color: #fff8e7;
+            --text-color: #8b4000;
+            --header-bg: #ff6f00;
+            --header-text: #ffffff;
+            --btn-bg: #ffe0b2;
+            --btn-text: #8b4000;
+            --accent-color: #ff6f00;
+            --font-family: 'Merriweather', serif;
+        }
+
+        /* Winter Theme */
+        .theme-winter {
+            --bg-color: #e8f4fb;
+            --text-color: #0d47a1;
+            --header-bg: #42a5f5;
+            --header-text: #ffffff;
+            --btn-bg: #c7e3fa;
+            --btn-text: #0d47a1;
+            --accent-color: #42a5f5;
+            --font-family: 'Playfair Display', serif;
+        }
+
+        /* Elegant Theme */
+        .theme-elegant {
+            --bg-color: #f9f9f9;
+            --text-color: #333333;
+            --header-bg: #9e9e9e;
+            --header-text: #ffffff;
+            --btn-bg: #e0e0e0;
+            --btn-text: #333333;
+            --accent-color: #9e9e9e;
+            --font-family: 'Cormorant Garamond', serif;
+        }
+
+        /* Vibrant Theme */
+        .theme-vibrant {
+            --bg-color: #fffde7;
+            --text-color: #ff6f00;
+            --header-bg: #ffeb3b;
+            --header-text: #ff6f00;
+            --btn-bg: #fff9c4;
+            --btn-text: #ff6f00;
+            --accent-color: #ffeb3b;
+            --font-family: 'Baloo 2', cursive;
+        }
+
+        /* Vintage Theme */
+        .theme-vintage {
+            --bg-color: #f3e5d8;
+            --text-color: #5d4037;
+            --header-bg: #8d6e63;
+            --header-text: #ffffff;
+            --btn-bg: #e3d0c3;
+            --btn-text: #5d4037;
+            --accent-color: #8d6e63;
+            --font-family: 'IM Fell English', serif;
+        }
+
+        /* Apply Theme Variables */
+        body.themed {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            font-family: var(--font-family);
+        }
+
+        body.themed header {
+            background-color: var(--header-bg);
+            color: var(--header-text);
+        }
+
+        body.themed nav {
+            background-color: var(--bg-color);
+            border-color: var(--accent-color);
+        }
+
+        body.themed nav button {
+            color: var(--text-color);
+        }
+
+        body.themed nav button:hover {
+            background-color: var(--btn-bg);
+        }
+
+        body.themed nav button.active {
+            background-color: var(--btn-bg);
+            border-color: var(--accent-color);
+        }
+
+        body.themed .calculator button {
+            background-color: var(--btn-bg);
+            color: var(--btn-text);
+            border-color: var(--accent-color);
+        }
+
+        body.themed .calculator button.equals {
+            background-color: var(--accent-color);
+            color: var(--header-text);
+        }
+
+        body.themed .display,
+        body.themed .result,
+        body.themed .history-item,
+        body.themed .sequence-results {
+            background-color: var(--btn-bg);
+            color: var(--btn-text);
+            border-color: var(--accent-color);
+            
+        }
+
+        body.themed .display {
+            max-width: 400px;
+        }
+
+        body.themed input,
+        body.themed select {
+            background-color: var(--btn-bg);
+            color: var(--btn-text);
+            border-color: var(--accent-color);
+        }
+
+        body.themed .calculate-btn,
+        body.themed .operation-buttons button.active {
+            background-color: var(--accent-color);
+            color: var(--header-text);
         }
     </style>
 </head>
-<body>
-    <div class="header">
-        <h1 class="title">Adaptive Scientific Calculator</h1>
-        <p class="subtitle">Now with keyboard support, history, and themes</p>
-    </div>
-    
+<body class="themed theme-default">
+    <header>
+        <h1>Calculator</h1>
+    </header>
+    <nav>
+        <button class="nav-btn active" data-section="basic">Calculator</button>
+        <button class="nav-btn" data-section="fraction">Fraction</button>
+        <button class="nav-btn" data-section="percentage">Percentage</button>
+        <button class="nav-btn" data-section="arithmetic">Arithmetic Seq</button>
+        <button class="nav-btn" data-section="geometric">Geometric Seq</button>
+        <button class="nav-btn" data-section="fibonacci">Fibonacci Seq</button>
+        <button class="nav-btn" data-section="history">History</button>
+        <button class="nav-btn" data-section="settings">Settings</button>
+    </nav>
     <div class="container">
-        <div class="calculator" role="application" aria-label="Scientific Calculator">
-            <div class="display" aria-live="polite">
-                <div class="expression" id="expression" aria-label="Expression"></div>
-                <div class="result" id="result" aria-label="Result">0</div>
+        <!-- Basic Calculator Section -->
+        <section class="calculator-section active" id="basic-section">
+            <div class="display">0</div>
+            <div class="calculator">
+                <button class="function" data-function="sin">sin</button>
+                <button class="function" data-function="cos">cos</button>
+                <button class="function" data-function="tan">tan</button>
+                <button class="function" data-function="log">log</button>
+                <button class="function" data-function="ln">ln</button>
+                
+                <button class="clear">C</button>
+                <button class="sign">±</button>
+                <button class="percent">%</button>
+                <button class="operator" data-operator="/">÷</button>
+                <button class="operator" data-operator="*">×</button>
+                
+                <button class="number" data-number="7">7</button>
+                <button class="number" data-number="8">8</button>
+                <button class="number" data-number="9">9</button>
+                <button class="operator" data-operator="-">-</button>
+                <button class="parenthesis" data-parenthesis="(">(</button>
+                
+                <button class="number" data-number="4">4</button>
+                <button class="number" data-number="5">5</button>
+                <button class="number" data-number="6">6</button>
+                <button class="operator" data-operator="+">+</button>
+                <button class="parenthesis" data-parenthesis=")">)</button>
+                
+                <button class="number" data-number="1">1</button>
+                <button class="number" data-number="2">2</button>
+                <button class="number" data-number="3">3</button>
+                <button class="sqrt">√</button>
+                <button class="power">^</button>
+                
+                <button class="number" data-number="0">0</button>
+                <button class="decimal">.</button>
+                <button class="factorial">!</button>
+                <button class="pi">π</button>
+                <button class="equals">=</button>
             </div>
-            
-            <div class="buttons">
-                <button class="function" data-value="sin(" aria-label="Sine function">sin</button>
-                <button class="function" data-value="cos(" aria-label="Cosine function">cos</button>
-                <button class="function" data-value="tan(" aria-label="Tangent function">tan</button>
-                <button class="function" data-value="log10(" aria-label="Logarithm base 10">log</button>
-                <button class="function" data-value="log(" aria-label="Natural logarithm">ln</button>
+        </section>
+
+        <!-- Fraction Calculator Section -->
+        <section class="calculator-section" id="fraction-section">
+            <h2>Fraction Calculator</h2>
+            <div class="fraction-calculator">
+                <div class="operation-buttons">
+                    <button class="fraction-operation active" data-operation="add">Add</button>
+                    <button class="fraction-operation" data-operation="subtract">Subtract</button>
+                    <button class="fraction-operation" data-operation="multiply">Multiply</button>
+                    <button class="fraction-operation" data-operation="divide">Divide</button>
+                    <button class="fraction-operation" data-operation="simplify">Simplify</button>
+                    <button class="fraction-operation" data-operation="convert">Convert</button>
+                </div>
                 
-                <button data-value="C" class="clear" aria-label="Clear">C</button>
-                <button data-value="±" aria-label="Change sign">±</button>
-                <button data-value="%" aria-label="Percentage">%</button>
-                <button class="operator" data-value="/" aria-label="Divide">÷</button>
-                <button class="operator" data-value="*" aria-label="Multiply">×</button>
-                
-                <button data-value="7" aria-label="7">7</button>
-                <button data-value="8" aria-label="8">8</button>
-                <button data-value="9" aria-label="9">9</button>
-                <button class="operator" data-value="-" aria-label="Subtract">-</button>
-                <button data-value="(" aria-label="Open parenthesis">(</button>
-                
-                <button data-value="4" aria-label="4">4</button>
-                <button data-value="5" aria-label="5">5</button>
-                <button data-value="6" aria-label="6">6</button>
-                <button class="operator" data-value="+" aria-label="Add">+</button>
-                <button data-value=")" aria-label="Close parenthesis">)</button>
-                
-                <button data-value="1" aria-label="1">1</button>
-                <button data-value="2" aria-label="2">2</button>
-                <button data-value="3" aria-label="3">3</button>
-                <button class="function" data-value="sqrt(" aria-label="Square root">√</button>
-                <button data-value="^" aria-label="Power">^</button>
-                
-                <button data-value="0" aria-label="0">0</button>
-                <button data-value="." aria-label="Decimal point">.</button>
-                <button data-value="factorial(" aria-label="Factorial">!</button>
-                <button data-value="pi" aria-label="Pi">π</button>
-                <button class="equals" data-value="=" aria-label="Equals">=</button>
+                <div class="fraction-sections">
+                    <div class="fraction-section active" id="fraction-operation-section">
+                        <div class="fraction-input">
+                            <span>First Fraction</span>
+                            <input type="number" id="frac1-num" placeholder="Numerator">
+                            <span>/</span>
+                            <input type="number" id="frac1-den" placeholder="Denominator">
+                        </div>
+                        <div class="fraction-input">
+                            <span>Second Fraction</span>
+                            <input type="number" id="frac2-num" placeholder="Numerator">
+                            <span>/</span>
+                            <input type="number" id="frac2-den" placeholder="Denominator">
+                        </div>
+                        <button class="calculate-btn" id="fraction-calculate">Calculate</button>
+                        <div class="result" id="fraction-result">Result:</div>
+                    </div>
+                    
+                    <div class="fraction-section" id="fraction-convert-section">
+                        <div class="operation-buttons">
+                            <button class="conversion-type active" data-type="to-decimal">Fraction to Decimal</button>
+                            <button class="conversion-type" data-type="to-fraction">Decimal to Fraction</button>
+                        </div>
+                        
+                        <div class="conversion-sections">
+                            <div class="fraction-input" id="to-decimal-section">
+                                <span>Fraction</span>
+                                <input type="number" id="convert-num" placeholder="Numerator">
+                                <span>/</span>
+                                <input type="number" id="convert-den" placeholder="Denominator">
+                            </div>
+                            
+                            <div class="fraction-input" id="to-fraction-section" style="display: none;">
+                                <span>Decimal</span>
+                                <input type="number" id="convert-decimal" placeholder="Decimal">
+                            </div>
+                        </div>
+                        
+                        <button class="calculate-btn" id="convert-calculate">Calculate</button>
+                        <div class="result" id="convert-result">Result:</div>
+                    </div>
+                </div>
             </div>
-        </div>
-        
-        <div class="history-panel" role="region" aria-label="Calculation History">
-            <div class="history-title">History</div>
-            <div id="history-list" class="history-list">
-                <div class="history-empty">No calculations yet</div>
+        </section>
+
+        <!-- Percentage Calculator Section -->
+        <section class="calculator-section" id="percentage-section">
+            <h2>Percentage Calculator</h2>
+            <div class="percentage-calculator">
+                <div class="operation-buttons">
+                    <button class="percentage-operation active" data-operation="what-is">What is % of</button>
+                    <button class="percentage-operation" data-operation="is-what">Is what % of</button>
+                    <button class="percentage-operation" data-operation="is-percent">Is % of what</button>
+                    <button class="percentage-operation" data-operation="percentage-change">Percentage Change</button>
+                </div>
+                
+                <div class="percentage-sections">
+                    <div class="percentage-section active" id="what-is-section">
+                        <div class="percentage-input">
+                            <span>What is</span>
+                            <input type="number" id="what-is-percent" placeholder="Percentage">
+                            <span>% of</span>
+                            <input type="number" id="what-is-value" placeholder="Value">
+                            <span>?</span>
+                        </div>
+                        <button class="calculate-btn" id="what-is-calculate">Calculate</button>
+                        <div class="result" id="what-is-result">Result:</div>
+                    </div>
+                    
+                    <div class="percentage-section" id="is-what-section">
+                        <div class="percentage-input">
+                            <span>Value 1 is what % of Value 2?</span>
+                        </div>
+                        <div class="percentage-input">
+                            <input type="number" id="is-what-value1" placeholder="Value 1">
+                            <span>is what % of</span>
+                            <input type="number" id="is-what-value2" placeholder="Value 2">
+                            <span>?</span>
+                        </div>
+                        <button class="calculate-btn" id="is-what-calculate">Calculate</button>
+                        <div class="result" id="is-what-result">Result:</div>
+                    </div>
+                    
+                    <div class="percentage-section" id="is-percent-section">
+                        <div class="percentage-input">
+                            <span>Value is X% of what?</span>
+                        </div>
+                        <div class="percentage-input">
+                            <input type="number" id="is-percent-value" placeholder="Value">
+                            <span>is</span>
+                            <input type="number" id="is-percent-percent" placeholder="Percentage">
+                            <span>% of what?</span>
+                        </div>
+                        <button class="calculate-btn" id="is-percent-calculate">Calculate</button>
+                        <div class="result" id="is-percent-result">Result:</div>
+                    </div>
+                    
+                    <div class="percentage-section" id="percentage-change-section">
+                        <div class="operation-buttons">
+                            <button class="change-type active" data-type="increase">Increase</button>
+                            <button class="change-type" data-type="decrease">Decrease</button>
+                        </div>
+                        <div class="percentage-input">
+                            <input type="number" id="change-value" placeholder="Value">
+                            <span id="change-type-text">increase</span>
+                            <input type="number" id="change-percent" placeholder="Percentage">
+                            <span>% =</span>
+                        </div>
+                        <button class="calculate-btn" id="change-calculate">Calculate</button>
+                        <div class="result" id="change-result">Result:</div>
+                    </div>
+                </div>
             </div>
-            <button id="history-clear" class="history-clear" aria-label="Clear history">Clear History</button>
-        </div>
-    </div>
-    
-    <div class="settings-panel" role="region" aria-label="Settings">
-        <div class="settings-title">Settings & Themes</div>
-        
-        <h3>Color Theme</h3>
-        <div class="theme-options">
-            <div class="theme-option light-theme active" data-theme="light" tabindex="0" role="radio" aria-checked="true" aria-label="Light theme"></div>
-            <div class="theme-option dark-theme" data-theme="dark" tabindex="0" role="radio" aria-checked="false" aria-label="Dark theme"></div>
-            <div class="theme-option blue-theme" data-theme="blue" tabindex="0" role="radio" aria-checked="false" aria-label="Blue theme"></div>
-            <div class="theme-option green-theme" data-theme="green" tabindex="0" role="radio" aria-checked="false" aria-label="Green theme"></div>
-            <div class="theme-option high-contrast-theme" data-theme="high-contrast" tabindex="0" role="radio" aria-checked="false" aria-label="High contrast theme"></div>
-        </div>
-        
-        <h3>Font Style</h3>
-        <div class="font-options">
-            <div class="font-option roboto active" data-font="Roboto" tabindex="0" role="radio" aria-checked="true">Roboto</div>
-            <div class="font-option open-sans" data-font="Open Sans" tabindex="0" role="radio" aria-checked="false">Open Sans</div>
-            <div class="font-option montserrat" data-font="Montserrat" tabindex="0" role="radio" aria-checked="false">Montserrat</div>
-            <div class="font-option calculator-font" data-font="CalculatorFont" tabindex="0" role="radio" aria-checked="false">Calculator</div>
-        </div>
-        
-        <h3>Button Style</h3>
-        <div class="button-style-options">
-            <div class="button-style-option active" data-button-style="default" tabindex="0" role="radio" aria-checked="true">Default</div>
-            <div class="button-style-option" data-button-style="rounded" tabindex="0" role="radio" aria-checked="false">Rounded</div>
-            <div class="button-style-option" data-button-style="square" tabindex="0" role="radio" aria-checked="false">Square</div>
-        </div>
+        </section>
+
+        <!-- Arithmetic Sequence Calculator Section -->
+        <section class="calculator-section" id="arithmetic-section">
+            <h2>Arithmetic Sequence Calculator</h2>
+            <div class="sequence-calculator">
+                <div class="sequence-inputs">
+                    <div class="input-group">
+                        <label for="arith-a1">First Term (a₁)</label>
+                        <input type="number" id="arith-a1" placeholder="Enter first term">
+                    </div>
+                    <div class="input-group">
+                        <label for="arith-d">Common Difference (d)</label>
+                        <input type="number" id="arith-d" placeholder="Enter common difference">
+                    </div>
+                    <div class="input-group">
+                        <label for="arith-n">Number of Terms (n)</label>
+                        <input type="number" id="arith-n" placeholder="Enter number of terms">
+                    </div>
+                    <button class="calculate-btn" id="arith-calculate">Calculate</button>
+                </div>
+                <div class="sequence-results">
+                    <p><strong>Results:</strong></p>
+                    <p id="arith-nth-term">n-th Term:</p>
+                    <p id="arith-sum">Sum of Sequence:</p>
+                    <p id="arith-sequence">Sequence:</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Geometric Sequence Calculator Section -->
+        <section class="calculator-section" id="geometric-section">
+            <h2>Geometric Sequence Calculator</h2>
+            <div class="sequence-calculator">
+                <div class="sequence-inputs">
+                    <div class="input-group">
+                        <label for="geo-a1">First Term (a₁)</label>
+                        <input type="number" id="geo-a1" placeholder="Enter first term">
+                    </div>
+                    <div class="input-group">
+                        <label for="geo-r">Common Ratio (r)</label>
+                        <input type="number" id="geo-r" placeholder="Enter common ratio">
+                    </div>
+                    <div class="input-group">
+                        <label for="geo-n">Number of Terms (n)</label>
+                        <input type="number" id="geo-n" placeholder="Enter number of terms">
+                    </div>
+                    <button class="calculate-btn" id="geo-calculate">Calculate</button>
+                </div>
+                <div class="sequence-results">
+                    <p><strong>Results:</strong></p>
+                    <p id="geo-nth-term">n-th Term:</p>
+                    <p id="geo-sum">Sum of Sequence:</p>
+                    <p id="geo-sequence">Sequence:</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Fibonacci Sequence Calculator Section -->
+        <section class="calculator-section" id="fibonacci-section">
+            <h2>Fibonacci Sequence Calculator</h2>
+            <div class="sequence-calculator">
+                <div class="sequence-inputs">
+                    <div class="input-group">
+                        <label for="fib-n">Number of Terms (n)</label>
+                        <input type="number" id="fib-n" placeholder="Enter number of terms">
+                    </div>
+                    <button class="calculate-btn" id="fib-calculate">Calculate</button>
+                </div>
+                <div class="sequence-results">
+                    <p><strong>Results:</strong></p>
+                    <p id="fib-nth-term">n-th Term:</p>
+                    <p id="fib-sequence">Sequence:</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- History Section -->
+        <section class="calculator-section" id="history-section">
+            <h2>History</h2>
+            <div class="history">
+                <div class="history-list" id="history-list">
+                    <p>No calculations yet</p>
+                </div>
+                <button class="clear-history" id="clear-history">Clear History</button>
+            </div>
+        </section>
+
+        <!-- Settings Section -->
+        <section class="calculator-section" id="settings-section">
+            <h2>Settings & Themes</h2>
+            <div class="settings">
+                <div class="theme-selector">
+                    <h3>Select Theme</h3>
+                    <div class="theme-dropdown">
+                        <select class="theme-select" id="theme-select">
+                            <option value="default">Default</option>
+                            <option value="dark">Dark</option>
+                            <option value="nature">Nature</option>
+                            <option value="sunset">Sunset</option>
+                            <option value="ocean">Ocean</option>
+                            <option value="lavender">Lavender</option>
+                            <option value="cherry">Cherry</option>
+                            <option value="coffee">Coffee</option>
+                            <option value="mint">Mint</option>
+                            <option value="berry">Berry</option>
+                            <option value="slate">Slate</option>
+                            <option value="retro">Retro</option>
+                            <option value="futuristic">Futuristic</option>
+                            <option value="pastel">Pastel</option>
+                            <option value="neon">Neon</option>
+                            <option value="autumn">Autumn</option>
+                            <option value="winter">Winter</option>
+                            <option value="elegant">Elegant</option>
+                            <option value="vibrant">Vibrant</option>
+                            <option value="vintage">Vintage</option>
+                        </select>
+                    </div>
+                    <div class="theme-options">
+                        <div class="theme-option" data-theme="default">Default</div>
+                        <div class="theme-option" data-theme="dark">Dark</div>
+                        <div class="theme-option" data-theme="nature">Nature</div>
+                        <div class="theme-option" data-theme="sunset">Sunset</div>
+                        <div class="theme-option" data-theme="ocean">Ocean</div>
+                        <div class="theme-option" data-theme="lavender">Lavender</div>
+                        <div class="theme-option" data-theme="cherry">Cherry</div>
+                        <div class="theme-option" data-theme="coffee">Coffee</div>
+                        <div class="theme-option" data-theme="mint">Mint</div>
+                        <div class="theme-option" data-theme="berry">Berry</div>
+                        <div class="theme-option" data-theme="slate">Slate</div>
+                        <div class="theme-option" data-theme="retro">Retro</div>
+                        <div class="theme-option" data-theme="futuristic">Futuristic</div>
+                        <div class="theme-option" data-theme="pastel">Pastel</div>
+                        <div class="theme-option" data-theme="neon">Neon</div>
+                        <div class="theme-option" data-theme="autumn">Autumn</div>
+                        <div class="theme-option" data-theme="winter">Winter</div>
+                        <div class="theme-option" data-theme="elegant">Elegant</div>
+                        <div class="theme-option" data-theme="vibrant">Vibrant</div>
+                        <div class="theme-option" data-theme="vintage">Vintage</div>
+                    </div>
+                </div>
+            </div>
+        </section>
     </div>
 
     <script>
-        // Wait for DOM to be fully loaded
-        document.addEventListener('DOMContentLoaded', function() {
-            // Elements
-            const expressionEl = document.getElementById('expression');
-            const resultEl = document.getElementById('result');
-            const historyListEl = document.getElementById('history-list');
-            const historyClearBtn = document.getElementById('history-clear');
-            const buttons = document.querySelectorAll('.buttons button');
-            const themeOptions = document.querySelectorAll('.theme-option');
-            const fontOptions = document.querySelectorAll('.font-option');
-            const buttonStyleOptions = document.querySelectorAll('.button-style-option');
+        // DOM Elements
+        const display = document.querySelector('.display');
+        const numberButtons = document.querySelectorAll('.number');
+        const operatorButtons = document.querySelectorAll('.operator');
+        const clearButton = document.querySelector('.clear');
+        const equalsButton = document.querySelector('.equals');
+        const decimalButton = document.querySelector('.decimal');
+        const signButton = document.querySelector('.sign');
+        const percentButton = document.querySelector('.percent');
+        const sqrtButton = document.querySelector('.sqrt');
+        const powerButton = document.querySelector('.power');
+        const parenthesisButtons = document.querySelectorAll('.parenthesis');
+        const functionButtons = document.querySelectorAll('.function');
+        const piButton = document.querySelector('.pi');
+        const factorialButton = document.querySelector('.factorial');
+        const navButtons = document.querySelectorAll('.nav-btn');
+        const calculatorSections = document.querySelectorAll('.calculator-section');
+        const themeSelect = document.getElementById('theme-select');
+        const themeOptions = document.querySelectorAll('.theme-option');
+        
+        // Font URLs for dynamic loading
+        const fontUrls = {
+            'Roboto': 'https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap',
+            'Montserrat': 'https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&display=swap',
+            'Quicksand': 'https://fonts.googleapis.com/css2?family=Quicksand:wght@400;700&display=swap',
+            'Poppins': 'https://fonts.googleapis.com/css2?family=Poppins:wght@400;700&display=swap',
+            'Lato': 'https://fonts.googleapis.com/css2?family=Lato:wght@400;700&display=swap',
+            'Source Sans Pro': 'https://fonts.googleapis.com/css2?family=Source+Sans+Pro:wght@400;700&display=swap',
+            'Raleway': 'https://fonts.googleapis.com/css2?family=Raleway:wght@400;700&display=swap',
+            'Ubuntu': 'https://fonts.googleapis.com/css2?family=Ubuntu:wght@400;700&display=swap',
+            'Nunito': 'https://fonts.googleapis.com/css2?family=Nunito:wght@400;700&display=swap',
+            'Mulish': 'https://fonts.googleapis.com/css2?family=Mulish:wght@400;700&display=swap',
+            'Open Sans': 'https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;700&display=swap',
+            'VT323': 'https://fonts.googleapis.com/css2?family=VT323&display=swap',
+            'Orbitron': 'https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&display=swap',
+            'Comfortaa': 'https://fonts.googleapis.com/css2?family=Comfortaa:wght@400;700&display=swap',
+            'Audiowide': 'https://fonts.googleapis.com/css2?family=Audiowide&display=swap',
+            'Merriweather': 'https://fonts.googleapis.com/css2?family=Merriweather:wght@400;700&display=swap',
+            'Playfair Display': 'https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&display=swap',
+            'Cormorant Garamond': 'https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;700&display=swap',
+            'Baloo 2': 'https://fonts.googleapis.com/css2?family=Baloo+2:wght@400;700&display=swap',
+            'IM Fell English': 'https://fonts.googleapis.com/css2?family=IM+Fell+English&display=swap'
+        };
 
-            // Variables
-            let currentExpression = '';
-            let lastResult = 0;
-            let history = [];
+        // Function to load a font dynamically
+        function loadFont(fontFamily) {
+            if (fontUrls[fontFamily]) {
+                const link = document.createElement('link');
+                link.rel = 'stylesheet';
+                link.href = fontUrls[fontFamily];
+                document.head.appendChild(link);
+            }
+        }
+
+        // Load default font
+        loadFont('Roboto');
+
+        // Calculator Variables
+        let currentInput = '0';
+        let previousInput = '';
+        let currentOperation = null;
+        let shouldResetInput = false;
+        let history = [];
+
+        // Initialize the calculator
+        function init() {
+            updateDisplay();
+            setupCalculationHistory();
+            setupFractionCalculator();
+            setupPercentageCalculator();
+            setupArithmeticSequenceCalculator();
+            setupGeometricSequenceCalculator();
+            setupFibonacciSequenceCalculator();
+        }
+
+        // Update the display
+        function updateDisplay() {
+            display.textContent = currentInput;
+        }
+
+        // Handle number button clicks
+        numberButtons.forEach(button => {
+            button.addEventListener('click', () => {
+                const number = button.getAttribute('data-number');
+                appendNumber(number);
+            });
+        });
+
+        function appendNumber(number) {
+            if (currentInput === '0' || shouldResetInput) {
+                currentInput = number;
+                shouldResetInput = false;
+            } else {
+                currentInput += number;
+            }
+            updateDisplay();
+        }
+
+        // Handle operator button clicks
+        operatorButtons.forEach(button => {
+            button.addEventListener('click', () => {
+                const operator = button.getAttribute('data-operator');
+                handleOperator(operator);
+            });
+        });
+
+        function handleOperator(operator) {
+            if (currentOperation !== null) {
+                calculate();
+            }
             
-            // Load settings from localStorage
-            loadSettings();
+            previousInput = currentInput;
+            currentOperation = operator;
+            shouldResetInput = true;
+        }
+
+        // Handle clear button click
+        clearButton.addEventListener('click', () => {
+            currentInput = '0';
+            previousInput = '';
+            currentOperation = null;
+            shouldResetInput = false;
+            updateDisplay();
+        });
+
+        // Handle equals button click
+        equalsButton.addEventListener('click', () => {
+            calculate();
+        });
+
+        // Perform calculation
+        function calculate() {
+            if (currentOperation === null || shouldResetInput) return;
             
-            // Load history from localStorage
-            loadHistory();
+            const prev = parseFloat(previousInput);
+            const current = parseFloat(currentInput);
+            let result;
+            
+            switch (currentOperation) {
+                case '+':
+                    result = prev + current;
+                    break;
+                case '-':
+                    result = prev - current;
+                    break;
+                case '*':
+                    result = prev * current;
+                    break;
+                case '/':
+                    result = prev / current;
+                    break;
+                default:
+                    return;
+            }
+            
+            const calculation = `${previousInput} ${currentOperation} ${currentInput} = ${result}`;
+            addToHistory(calculation);
+            
+            currentInput = result.toString();
+            currentOperation = null;
+            shouldResetInput = true;
+            updateDisplay();
+        }
 
-            // Initialize buttons
-            buttons.forEach(button => {
-                button.addEventListener('click', function() {
-                    handleInput(this.getAttribute('data-value'));
-                });
+        // Handle decimal button click
+        decimalButton.addEventListener('click', () => {
+            if (shouldResetInput) {
+                currentInput = '0.';
+                shouldResetInput = false;
+            } else if (!currentInput.includes('.')) {
+                currentInput += '.';
+            }
+            updateDisplay();
+        });
+
+        // Handle sign button click
+        signButton.addEventListener('click', () => {
+            currentInput = (parseFloat(currentInput) * -1).toString();
+            updateDisplay();
+        });
+
+        // Handle percent button click
+        percentButton.addEventListener('click', () => {
+            currentInput = (parseFloat(currentInput) / 100).toString();
+            updateDisplay();
+        });
+
+        // Handle sqrt button click
+        sqrtButton.addEventListener('click', () => {
+            currentInput = Math.sqrt(parseFloat(currentInput)).toString();
+            updateDisplay();
+        });
+
+        // Handle power button click
+        powerButton.addEventListener('click', () => {
+            previousInput = currentInput;
+            currentOperation = '^';
+            shouldResetInput = true;
+        });
+
+        // Handle parenthesis button clicks
+        parenthesisButtons.forEach(button => {
+            button.addEventListener('click', () => {
+                const parenthesis = button.getAttribute('data-parenthesis');
+                appendParenthesis(parenthesis);
             });
+        });
 
-            // Keyboard support
-            document.addEventListener('keydown', function(event) {
-                const key = event.key;
-                
-                // Prevent default action for calculator keys
-                if (/[\d+\-*/.()=]|Enter|Backspace|Escape/.test(key)) {
-                    event.preventDefault();
+        function appendParenthesis(parenthesis) {
+            if (currentInput === '0' || shouldResetInput) {
+                currentInput = parenthesis;
+                shouldResetInput = false;
+            } else {
+                currentInput += parenthesis;
+            }
+            updateDisplay();
+        }
+
+        // Handle function button clicks
+        functionButtons.forEach(button => {
+            button.addEventListener('click', () => {
+                const func = button.getAttribute('data-function');
+                handleFunction(func);
+            });
+        });
+
+        function handleFunction(func) {
+            const value = parseFloat(currentInput);
+            let result;
+            
+            switch (func) {
+                case 'sin':
+                    result = Math.sin(value * Math.PI / 180);
+                    break;
+                case 'cos':
+                    result = Math.cos(value * Math.PI / 180);
+                    break;
+                case 'tan':
+                    result = Math.tan(value * Math.PI / 180);
+                    break;
+                case 'log':
+                    result = Math.log10(value);
+                    break;
+                case 'ln':
+                    result = Math.log(value);
+                    break;
+                default:
+                    return;
+            }
+            
+            const calculation = `${func}(${currentInput}) = ${result}`;
+            addToHistory(calculation);
+            
+            currentInput = result.toString();
+            updateDisplay();
+        }
+
+        // Handle pi button click
+        piButton.addEventListener('click', () => {
+            currentInput = Math.PI.toString();
+            updateDisplay();
+        });
+
+        // Handle factorial button click
+        factorialButton.addEventListener('click', () => {
+            const num = parseInt(currentInput);
+            let result = 1;
+            
+            for (let i = 2; i <= num; i++) {
+                result *= i;
+            }
+            
+            const calculation = `${currentInput}! = ${result}`;
+            addToHistory(calculation);
+            
+            currentInput = result.toString();
+            updateDisplay();
+        });
+
+        // Navigation between calculator sections
+        navButtons.forEach(button => {
+            button.addEventListener('click', () => {
+                const section = button.getAttribute('data-section');
+                switchSection(section);
+            });
+        });
+
+        function switchSection(section) {
+            navButtons.forEach(button => {
+                button.classList.remove('active');
+                if (button.getAttribute('data-section') === section) {
+                    button.classList.add('active');
                 }
-                
-                // Map keyboard keys to calculator functions
-                switch(key) {
-                    case '0':
-                    case '1':
-                    case '2':
-                    case '3':
-                    case '4':
-                    case '5':
-                    case '6':
-                    case '7':
-                    case '8':
-                    case '9':
-                    case '.':
-                    case '+':
-                    case '-':
-                    case '*':
-                    case '/':
-                    case '(':
-                    case ')':
-                    case '^':
-                        handleInput(key);
-                        break;
-                    case '%':
-                        handleInput('%');
-                        break;
-                    case 'Enter':
-                    case '=':
-                        handleInput('=');
-                        break;
-                    case 'Backspace':
-                        handleInput('backspace');
-                        break;
-                    case 'Escape':
-                        handleInput('C');
-                        break;
-                    case 's':
-                        if (event.ctrlKey) handleInput('sin(');
-                        break;
-                    case 'c':
-                        if (event.ctrlKey) handleInput('cos(');
-                        break;
-                    case 't':
-                        if (event.ctrlKey) handleInput('tan(');
-                        break;
-                    case 'l':
-                        if (event.ctrlKey) handleInput('log10(');
-                        break;
-                    case 'n':
-                        if (event.ctrlKey) handleInput('log(');
-                        break;
-                    case 'r':
-                        if (event.ctrlKey) handleInput('sqrt(');
-                        break;
-                    case 'p':
-                        if (event.ctrlKey) handleInput('pi');
-                        break;
-                    case '!':
-                        handleInput('factorial(');
-                        break;
+            });
+            
+            calculatorSections.forEach(calcSection => {
+                calcSection.classList.remove('active');
+                if (calcSection.id === `${section}-section`) {
+                    calcSection.classList.add('active');
                 }
             });
+        }
 
-            // History clear button
-            historyClearBtn.addEventListener('click', function() {
-                clearHistory();
+        // Handle history
+        function addToHistory(calculation) {
+            history.push(calculation);
+            updateHistoryDisplay();
+        }
+
+        function updateHistoryDisplay() {
+            const historyList = document.getElementById('history-list');
+            
+            if (history.length === 0) {
+                historyList.innerHTML = '<p>No calculations yet</p>';
+                return;
+            }
+            
+            historyList.innerHTML = '';
+            
+            history.forEach(calculation => {
+                const historyItem = document.createElement('div');
+                historyItem.className = 'history-item';
+                historyItem.textContent = calculation;
+                historyList.appendChild(historyItem);
             });
+        }
 
-            // Theme selection
-            themeOptions.forEach(option => {
-                option.addEventListener('click', function() {
-                    const theme = this.getAttribute('data-theme');
-                    setTheme(theme);
+        function setupCalculationHistory() {
+            const clearHistoryButton = document.getElementById('clear-history');
+            
+            clearHistoryButton.addEventListener('click', () => {
+                history = [];
+                updateHistoryDisplay();
+            });
+        }
+
+        // Fraction Calculator
+        function setupFractionCalculator() {
+            // Operation selection
+            const operationButtons = document.querySelectorAll('.fraction-operation');
+            const fractionSections = document.querySelectorAll('.fraction-section');
+            
+            operationButtons.forEach(button => {
+                button.addEventListener('click', () => {
+                    operationButtons.forEach(btn => btn.classList.remove('active'));
+                    button.classList.add('active');
                     
-                    // Update ARIA attributes
-                    themeOptions.forEach(opt => {
-                        opt.setAttribute('aria-checked', 'false');
-                        opt.classList.remove('active');
+                    const operation = button.getAttribute('data-operation');
+                    
+                    fractionSections.forEach(section => {
+                        section.classList.remove('active');
                     });
-                    this.setAttribute('aria-checked', 'true');
-                    this.classList.add('active');
                     
-                    // Save to localStorage
-                    localStorage.setItem('calculatorTheme', theme);
-                });
-                
-                // Keyboard accessibility
-                option.addEventListener('keydown', function(e) {
-                    if (e.key === ' ' || e.key === 'Enter') {
-                        e.preventDefault();
-                        this.click();
+                    if (operation === 'convert') {
+                        document.getElementById('fraction-convert-section').classList.add('active');
+                    } else {
+                        document.getElementById('fraction-operation-section').classList.add('active');
                     }
                 });
             });
-
-            // Font selection
-            fontOptions.forEach(option => {
-                option.addEventListener('click', function() {
-                    const font = this.getAttribute('data-font');
-                    setFont(font);
+            
+            // Conversion type selection
+            const conversionTypeButtons = document.querySelectorAll('.conversion-type');
+            
+            conversionTypeButtons.forEach(button => {
+                button.addEventListener('click', () => {
+                    conversionTypeButtons.forEach(btn => btn.classList.remove('active'));
+                    button.classList.add('active');
                     
-                    // Update ARIA attributes
-                    fontOptions.forEach(opt => {
-                        opt.setAttribute('aria-checked', 'false');
-                        opt.classList.remove('active');
-                    });
-                    this.setAttribute('aria-checked', 'true');
-                    this.classList.add('active');
+                    const type = button.getAttribute('data-type');
                     
-                    // Save to localStorage
-                    localStorage.setItem('calculatorFont', font);
-                });
-                
-                // Keyboard accessibility
-                option.addEventListener('keydown', function(e) {
-                    if (e.key === ' ' || e.key === 'Enter') {
-                        e.preventDefault();
-                        this.click();
+                    if (type === 'to-decimal') {
+                        document.getElementById('to-decimal-section').style.display = 'flex';
+                        document.getElementById('to-fraction-section').style.display = 'none';
+                    } else {
+                        document.getElementById('to-decimal-section').style.display = 'none';
+                        document.getElementById('to-fraction-section').style.display = 'flex';
                     }
                 });
             });
-
-            // Button style selection
-            buttonStyleOptions.forEach(option => {
-                option.addEventListener('click', function() {
-                    const style = this.getAttribute('data-button-style');
-                    setButtonStyle(style);
-                    
-                    // Update ARIA attributes
-                    buttonStyleOptions.forEach(opt => {
-                        opt.setAttribute('aria-checked', 'false');
-                        opt.classList.remove('active');
-                    });
-                    this.setAttribute('aria-checked', 'true');
-                    this.classList.add('active');
-                    
-                    // Save to localStorage
-                    localStorage.setItem('calculatorButtonStyle', style);
-                });
+            
+            // Fraction operations calculation
+            const fractionCalculateButton = document.getElementById('fraction-calculate');
+            
+            fractionCalculateButton.addEventListener('click', () => {
+                const num1 = parseInt(document.getElementById('frac1-num').value);
+                const den1 = parseInt(document.getElementById('frac1-den').value);
+                const num2 = parseInt(document.getElementById('frac2-num').value);
+                const den2 = parseInt(document.getElementById('frac2-den').value);
                 
-                // Keyboard accessibility
-                option.addEventListener('keydown', function(e) {
-                    if (e.key === ' ' || e.key === 'Enter') {
-                        e.preventDefault();
-                        this.click();
-                    }
-                });
-            });
-
-            // Handle input
-            function handleInput(value) {
-                switch(value) {
-                    case 'C':
-                        currentExpression = '';
-                        updateDisplay('0');
-                        break;
-                        
-                    case '=':
-                        if (currentExpression) {
-                            try {
-                                // Use math.js for evaluation instead of eval
-                                let mathExpression = currentExpression
-                                    .replace(/log10\(/g, 'log10(')
-                                    .replace(/log\(/g, 'ln(')
-                                    .replace(/pi/g, 'PI')
-                                    .replace(/±/g, '-1*');
-                                
-                                const result = math.evaluate(mathExpression);
-                                // Format the result
-                                let formattedResult;
-                                if (result === Infinity || result === -Infinity) {
-                                    formattedResult = result.toString();
-                                } else if (Math.abs(result) < 1e-10 && result !== 0) {
-                                    formattedResult = result.toExponential(4);
-                                } else if (Math.abs(result) > 1e10) {
-                                    formattedResult = result.toExponential(4);
-                                } else {
-                                    formattedResult = parseFloat(result.toPrecision(10)).toString();
-                                }
-                                
-                                // Add to history
-                                addToHistory(currentExpression, formattedResult);
-                                
-                                // Update display
-                                updateDisplay(formattedResult, currentExpression);
-                                
-                                // Set for next calculation
-                                lastResult = formattedResult;
-                                currentExpression = formattedResult;
-                            } catch (error) {
-                                updateDisplay('Error', currentExpression);
-                                currentExpression = '';
-                            }
-                        }
-                        break;
-                        
-                    case 'backspace':
-                        if (currentExpression.length > 0) {
-                            currentExpression = currentExpression.slice(0, -1);
-                            updateDisplay(currentExpression || '0');
-                        }
-                        break;
-                        
-                    case '±':
-                        if (currentExpression) {
-                            // Toggle sign of the last number in the expression
-                            const regex = /(^|[+\-*/^(])-?\d+(\.\d+)?$/;
-                            const match = currentExpression.match(regex);
-                            
-                            if (match) {
-                                const lastNumber = match[0];
-                                const op = lastNumber.charAt(0);
-                                const isNegative = op === '-' || (lastNumber.length > 1 && lastNumber.charAt(1) === '-');
-                                
-                                if (op === '+' || op === '-' || op === '*' || op === '/' || op === '^' || op === '(') {
-                                    // There's an operator before the number
-                                    const numberWithoutOp = lastNumber.substring(1);
-                                    const toggledNumber = isNegative 
-                                        ? numberWithoutOp.substring(1) // Remove the negative sign
-                                        : '-' + numberWithoutOp; // Add negative sign
-                                    
-                                    currentExpression = currentExpression.substring(0, match.index) + 
-                                                    op + toggledNumber;
-                                } else {
-                                    // The number is at the start of the expression
-                                    const toggledNumber = isNegative 
-                                        ? lastNumber.substring(1) // Remove the negative sign
-                                        : '-' + lastNumber; // Add negative sign
-                                    
-                                    currentExpression = currentExpression.substring(0, match.index) + toggledNumber;
-                                }
-                            } else {
-                                // No match found, just negate the entire expression
-                                currentExpression = '-(' + currentExpression + ')';
-                            }
-                            
-                            updateDisplay(currentExpression);
-                        }
-                        break;
-                        
-                    default:
-                        // Handle standard input
-                        if (currentExpression === '0' && !isNaN(value)) {
-                            currentExpression = value;
-                        } else {
-                            currentExpression += value;
-                        }
-                        updateDisplay(currentExpression);
-                        break;
-                }
-            }
-
-            // Update the calculator display
-            function updateDisplay(result, expression = null) {
-                resultEl.textContent = result;
-                expressionEl.textContent = expression || '';
-            }
-
-            // Add calculation to history
-            function addToHistory(expression, result) {
-                // Create history item
-                const historyItem = {
-                    expression: expression,
-                    result: result,
-                    timestamp: new Date().toISOString()
-                };
-                
-                // Add to beginning of history array
-                history.unshift(historyItem);
-                
-                // Limit history to 20 items
-                if (history.length > 20) {
-                    history.pop();
-                }
-                
-                // Save to localStorage
-                localStorage.setItem('calculatorHistory', JSON.stringify(history));
-                
-                // Update display
-                renderHistory();
-            }
-
-            // Render history
-            function renderHistory() {
-                // Clear history list
-                historyListEl.innerHTML = '';
-                
-                if (history.length === 0) {
-                    historyListEl.innerHTML = '<div class="history-empty">No calculations yet</div>';
+                if (isNaN(num1) || isNaN(den1) || den1 === 0) {
+                    document.getElementById('fraction-result').textContent = 'Invalid first fraction';
                     return;
                 }
                 
-                // Add each history item
-                history.forEach((item, index) => {
-                    const historyItem = document.createElement('div');
-                    historyItem.className = 'history-item';
-                    historyItem.setAttribute('tabindex', '0');
-                    historyItem.setAttribute('role', 'button');
-                    historyItem.setAttribute('aria-label', `Calculation: ${item.expression} equals ${item.result}. Click to use this calculation`);
-                    
-                    const historyExpression = document.createElement('div');
-                    historyExpression.className = 'history-expression';
-                    historyExpression.textContent = item.expression;
-                    
-                    const historyResult = document.createElement('div');
-                    historyResult.className = 'history-result';
-                    historyResult.textContent = item.result;
-                    
-                    historyItem.appendChild(historyExpression);
-                    historyItem.appendChild(historyResult);
-                    
-                    // Add click event to reuse the calculation
-                    historyItem.addEventListener('click', function() {
-                        currentExpression = item.result;
-                        updateDisplay(item.result);
-                    });
-                    
-                    // Keyboard accessibility
-                    historyItem.addEventListener('keydown', function(e) {
-                        if (e.key === ' ' || e.key === 'Enter') {
-                            e.preventDefault();
-                            this.click();
-                        }
-                    });
-                    
-                    historyListEl.appendChild(historyItem);
-                });
-            }
-
-            // Clear history
-            function clearHistory() {
-                history = [];
-                localStorage.removeItem('calculatorHistory');
-                renderHistory();
-            }
-
-            // Load history from localStorage
-            function loadHistory() {
-                const savedHistory = localStorage.getItem('calculatorHistory');
-                if (savedHistory) {
-                    try {
-                        history = JSON.parse(savedHistory);
-                        renderHistory();
-                    } catch (error) {
-                        console.error('Failed to load history:', error);
-                        history = [];
-                    }
-                }
-            }
-
-            // Set theme
-            function setTheme(theme) {
-                document.body.setAttribute('data-theme', theme);
-            }
-
-            // Set font
-            function setFont(font) {
-                document.documentElement.style.setProperty('--font-family', `'${font}', sans-serif`);
-            }
-
-            // Set button style
-            function setButtonStyle(style) {
-                const calculatorButtons = document.querySelectorAll('.buttons button');
+                const activeOperation = document.querySelector('.fraction-operation.active').getAttribute('data-operation');
                 
-                calculatorButtons.forEach(button => {
-                    // Remove all button style classes
-                    button.classList.remove('button-rounded', 'button-square');
+                if (activeOperation !== 'simplify' && (isNaN(num2) || isNaN(den2) || den2 === 0)) {
+                    document.getElementById('fraction-result').textContent = 'Invalid second fraction';
+                    return;
+                }
+                
+                let result, resultText;
+                
+                switch (activeOperation) {
+                    case 'add':
+                        result = addFractions(num1, den1, num2, den2);
+                        resultText = `${num1}/${den1} + ${num2}/${den2} = ${result.num}/${result.den}`;
+                        break;
+                    case 'subtract':
+                        result = subtractFractions(num1, den1, num2, den2);
+                        resultText = `${num1}/${den1} - ${num2}/${den2} = ${result.num}/${result.den}`;
+                        break;
+                    case 'multiply':
+                        result = multiplyFractions(num1, den1, num2, den2);
+                        resultText = `${num1}/${den1} × ${num2}/${den2} = ${result.num}/${result.den}`;
+                        break;
+                    case 'divide':
+                        result = divideFractions(num1, den1, num2, den2);
+                        resultText = `${num1}/${den1} ÷ ${num2}/${den2} = ${result.num}/${result.den}`;
+                        break;
+                    case 'simplify':
+                        result = simplifyFraction(num1, den1);
+                        resultText = `${num1}/${den1} simplified = ${result.num}/${result.den}`;
+                        break;
+                }
+                
+                document.getElementById('fraction-result').textContent = `Result: ${resultText}`;
+                addToHistory(resultText);
+            });
+            
+            // Conversion calculation
+            const convertCalculateButton = document.getElementById('convert-calculate');
+            
+            convertCalculateButton.addEventListener('click', () => {
+                const activeConversion = document.querySelector('.conversion-type.active').getAttribute('data-type');
+                
+                if (activeConversion === 'to-decimal') {
+                    const num = parseInt(document.getElementById('convert-num').value);
+                    const den = parseInt(document.getElementById('convert-den').value);
                     
-                    // Add new style class if not default
-                    if (style === 'rounded') {
-                        button.classList.add('button-rounded');
-                    } else if (style === 'square') {
-                        button.classList.add('button-square');
+                    if (isNaN(num) || isNaN(den) || den === 0) {
+                        document.getElementById('convert-result').textContent = 'Invalid fraction';
+                        return;
                     }
-                });
-            }
-
-            // Load settings from localStorage
-            function loadSettings() {
-                // Load theme
-                const savedTheme = localStorage.getItem('calculatorTheme');
-                if (savedTheme) {
-                    setTheme(savedTheme);
                     
-                    // Update active class and ARIA attributes
-                    themeOptions.forEach(option => {
-                        const optionTheme = option.getAttribute('data-theme');
-                        if (optionTheme === savedTheme) {
-                            option.classList.add('active');
-                            option.setAttribute('aria-checked', 'true');
-                        } else {
-                            option.classList.remove('active');
-                            option.setAttribute('aria-checked', 'false');
-                        }
-                    });
+                    const decimal = num / den;
+                    document.getElementById('convert-result').textContent = `Result: ${num}/${den} = ${decimal}`;
+                    addToHistory(`${num}/${den} = ${decimal}`);
                 } else {
-                    // Check system preference for dark mode
-                    if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
-                        setTheme('dark');
-                        
-                        // Update active class and ARIA attributes
-                        themeOptions.forEach(option => {
-                            const optionTheme = option.getAttribute('data-theme');
-                            if (optionTheme === 'dark') {
-                                option.classList.add('active');
-                                option.setAttribute('aria-checked', 'true');
-                            } else {
-                                option.classList.remove('active');
-                                option.setAttribute('aria-checked', 'false');
-                            }
-                        });
+                    const decimal = parseFloat(document.getElementById('convert-decimal').value);
+                    
+                    if (isNaN(decimal)) {
+                        document.getElementById('convert-result').textContent = 'Invalid decimal';
+                        return;
                     }
-                }
-                
-                // Load font
-                const savedFont = localStorage.getItem('calculatorFont');
-                if (savedFont) {
-                    setFont(savedFont);
                     
-                    // Update active class and ARIA attributes
-                    fontOptions.forEach(option => {
-                        const optionFont = option.getAttribute('data-font');
-                        if (optionFont === savedFont) {
-                            option.classList.add('active');
-                            option.setAttribute('aria-checked', 'true');
-                        } else {
-                            option.classList.remove('active');
-                            option.setAttribute('aria-checked', 'false');
-                        }
-                    });
+                    const fraction = decimalToFraction(decimal);
+                    document.getElementById('convert-result').textContent = `Result: ${decimal} = ${fraction.num}/${fraction.den}`;
+                    addToHistory(`${decimal} = ${fraction.num}/${fraction.den}`);
                 }
-                
-                // Load button style
-                const savedButtonStyle = localStorage.getItem('calculatorButtonStyle');
-                if (savedButtonStyle) {
-                    setButtonStyle(savedButtonStyle);
-                    
-                    // Update active class and ARIA attributes
-                    buttonStyleOptions.forEach(option => {
-                        const optionStyle = option.getAttribute('data-button-style');
-                        if (optionStyle === savedButtonStyle) {
-                            option.classList.add('active');
-                            option.setAttribute('aria-checked', 'true');
-                        } else {
-                            option.classList.remove('active');
-                            option.setAttribute('aria-checked', 'false');
-                        }
-                    });
-                }
-            }
-        });
-
-        // Register service worker for PWA functionality
-        if ('serviceWorker' in navigator) {
-            window.addEventListener('load', () => {
-                navigator.serviceWorker.register('/sw.js')
-                    .then(registration => {
-                        console.log('Service Worker registered with scope:', registration.scope);
-                    })
-                    .catch(error => {
-                        console.error('Service Worker registration failed:', error);
-                    });
             });
         }
-    </script>
 
-    <!-- PWA Manifest (embedded for this example) -->
-    <script id="manifest" type="application/manifest+json">
-    {
-        "name": "Advanced Scientific Calculator",
-        "short_name": "Calculator",
-        "description": "A powerful scientific calculator with history and themes",
-        "start_url": "/",
-        "display": "standalone",
-        "background_color": "#ffffff",
-        "theme_color": "#3a86ff",
-        "icons": [
-            {
-                "src": "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='512' height='512' viewBox='0 0 512 512'%3E%3Crect width='512' height='512' rx='64' fill='%233a86ff'/%3E%3Cpath d='M128 128h256v96H128z' fill='white'/%3E%3Cpath d='M128 256h64v64h-64zM224 256h64v64h-64zM320 256h64v64h-64zM128 352h64v64h-64zM224 352h64v64h-64zM320 352h64v64h-64z' fill='white'/%3E%3C/svg%3E",
-                "sizes": "512x512",
-                "type": "image/svg+xml",
-                "purpose": "any maskable"
+        // Fraction operations
+        function gcd(a, b) {
+            return b === 0 ? a : gcd(b, a % b);
+        }
+
+        function simplifyFraction(num, den) {
+            const divisor = gcd(Math.abs(num), Math.abs(den));
+            return {
+                num: num / divisor,
+                den: den / divisor
+            };
+        }
+
+        function addFractions(num1, den1, num2, den2) {
+            const resultNum = num1 * den2 + num2 * den1;
+            const resultDen = den1 * den2;
+            return simplifyFraction(resultNum, resultDen);
+        }
+
+        function subtractFractions(num1, den1, num2, den2) {
+            const resultNum = num1 * den2 - num2 * den1;
+            const resultDen = den1 * den2;
+            return simplifyFraction(resultNum, resultDen);
+        }
+
+        function multiplyFractions(num1, den1, num2, den2) {
+            const resultNum = num1 * num2;
+            const resultDen = den1 * den2;
+            return simplifyFraction(resultNum, resultDen);
+        }
+
+        function divideFractions(num1, den1, num2, den2) {
+            const resultNum = num1 * den2;
+            const resultDen = den1 * num2;
+            return simplifyFraction(resultNum, resultDen);
+        }
+
+        function decimalToFraction(decimal) {
+            const precision = 1000000;
+            let num = Math.round(decimal * precision);
+            let den = precision;
+            return simplifyFraction(num, den);
+        }
+
+        // Percentage Calculator
+        function setupPercentageCalculator() {
+            // Operation selection
+            const percentageOperationButtons = document.querySelectorAll('.percentage-operation');
+            const percentageSections = document.querySelectorAll('.percentage-section');
+            
+            percentageOperationButtons.forEach(button => {
+                button.addEventListener('click', () => {
+                    percentageOperationButtons.forEach(btn => btn.classList.remove('active'));
+                    button.classList.add('active');
+                    
+                    const operation = button.getAttribute('data-operation');
+                    
+                    percentageSections.forEach(section => {
+                        section.classList.remove('active');
+                    });
+                    
+                    document.getElementById(`${operation}-section`).classList.add('active');
+                });
+            });
+            
+            // Change type selection
+            const changeTypeButtons = document.querySelectorAll('.change-type');
+            
+            changeTypeButtons.forEach(button => {
+                button.addEventListener('click', () => {
+                    changeTypeButtons.forEach(btn => btn.classList.remove('active'));
+                    button.classList.add('active');
+                    
+                    const type = button.getAttribute('data-type');
+                    document.getElementById('change-type-text').textContent = type;
+                });
+            });
+            
+            // What is % of calculation
+            document.getElementById('what-is-calculate').addEventListener('click', () => {
+                const percent = parseFloat(document.getElementById('what-is-percent').value);
+                const value = parseFloat(document.getElementById('what-is-value').value);
+                
+                if (isNaN(percent) || isNaN(value)) {
+                    document.getElementById('what-is-result').textContent = 'Invalid input';
+                    return;
+                }
+                
+                const result = (percent / 100) * value;
+                const resultText = `${percent}% of ${value} = ${result}`;
+                document.getElementById('what-is-result').textContent = `Result: ${resultText}`;
+                addToHistory(resultText);
+            });
+            
+            // Is what % of calculation
+            document.getElementById('is-what-calculate').addEventListener('click', () => {
+                const value1 = parseFloat(document.getElementById('is-what-value1').value);
+                const value2 = parseFloat(document.getElementById('is-what-value2').value);
+                
+                if (isNaN(value1) || isNaN(value2) || value2 === 0) {
+                    document.getElementById('is-what-result').textContent = 'Invalid input';
+                    return;
+                }
+                
+                const result = (value1 / value2) * 100;
+                const resultText = `${value1} is ${result}% of ${value2}`;
+                document.getElementById('is-what-result').textContent = `Result: ${resultText}`;
+                addToHistory(resultText);
+            });
+            
+            // Is % of what calculation
+            document.getElementById('is-percent-calculate').addEventListener('click', () => {
+                const value = parseFloat(document.getElementById('is-percent-value').value);
+                const percent = parseFloat(document.getElementById('is-percent-percent').value);
+                
+                if (isNaN(value) || isNaN(percent) || percent === 0) {
+                    document.getElementById('is-percent-result').textContent = 'Invalid input';
+                    return;
+                }
+                
+                const result = value / (percent / 100);
+                const resultText = `${value} is ${percent}% of ${result}`;
+                document.getElementById('is-percent-result').textContent = `Result: ${resultText}`;
+                addToHistory(resultText);
+            });
+            
+            // Percentage change calculation
+            document.getElementById('change-calculate').addEventListener('click', () => {
+                const value = parseFloat(document.getElementById('change-value').value);
+                const percent = parseFloat(document.getElementById('change-percent').value);
+                const isIncrease = document.querySelector('.change-type.active').getAttribute('data-type') === 'increase';
+                
+                if (isNaN(value) || isNaN(percent)) {
+                    document.getElementById('change-result').textContent = 'Invalid input';
+                    return;
+                }
+                
+                let result;
+                if (isIncrease) {
+                    result = value * (1 + percent / 100);
+                } else {
+                    result = value * (1 - percent / 100);
+                }
+                
+                const changeType = isIncrease ? 'increase' : 'decrease';
+                const resultText = `${value} ${changeType} by ${percent}% = ${result}`;
+                document.getElementById('change-result').textContent = `Result: ${resultText}`;
+                addToHistory(resultText);
+            });
+        }
+
+        // Arithmetic Sequence Calculator
+        function setupArithmeticSequenceCalculator() {
+            document.getElementById('arith-calculate').addEventListener('click', () => {
+                const a1 = parseFloat(document.getElementById('arith-a1').value);
+                const d = parseFloat(document.getElementById('arith-d').value);
+                const n = parseInt(document.getElementById('arith-n').value);
+                
+                if (isNaN(a1) || isNaN(d) || isNaN(n) || n <= 0) {
+                    document.getElementById('arith-nth-term').textContent = 'n-th Term: Invalid input';
+                    document.getElementById('arith-sum').textContent = 'Sum of Sequence: Invalid input';
+                    document.getElementById('arith-sequence').textContent = 'Sequence: Invalid input';
+                    return;
+                }
+                
+                // Calculate nth term
+                const nthTerm = a1 + (n - 1) * d;
+                
+                // Calculate sum
+                const sum = (n / 2) * (2 * a1 + (n - 1) * d);
+                
+                // Generate sequence
+                let sequence = [];
+                for (let i = 0; i < n; i++) {
+                    sequence.push(a1 + i * d);
+                }
+                
+                document.getElementById('arith-nth-term').textContent = `n-th Term: ${nthTerm}`;
+                document.getElementById('arith-sum').textContent = `Sum of Sequence: ${sum}`;
+                document.getElementById('arith-sequence').textContent = `Sequence: ${sequence.join(', ')}`;
+                
+                const resultText = `Arithmetic Sequence: a₁=${a1}, d=${d}, n=${n}`;
+                addToHistory(resultText);
+            });
+        }
+
+        // Geometric Sequence Calculator
+        function setupGeometricSequenceCalculator() {
+            document.getElementById('geo-calculate').addEventListener('click', () => {
+                const a1 = parseFloat(document.getElementById('geo-a1').value);
+                const r = parseFloat(document.getElementById('geo-r').value);
+                const n = parseInt(document.getElementById('geo-n').value);
+                
+                if (isNaN(a1) || isNaN(r) || isNaN(n) || n <= 0) {
+                    document.getElementById('geo-nth-term').textContent = 'n-th Term: Invalid input';
+                    document.getElementById('geo-sum').textContent = 'Sum of Sequence: Invalid input';
+                    document.getElementById('geo-sequence').textContent = 'Sequence: Invalid input';
+                    return;
+                }
+                
+                // Calculate nth term
+                const nthTerm = a1 * Math.pow(r, n - 1);
+                
+                // Calculate sum
+                let sum;
+                if (r === 1) {
+                    sum = a1 * n;
+                } else {
+                    sum = a1 * (1 - Math.pow(r, n)) / (1 - r);
+                }
+                
+                // Generate sequence
+                let sequence = [];
+                for (let i = 0; i < n; i++) {
+                    sequence.push(a1 * Math.pow(r, i));
+                }
+                
+                document.getElementById('geo-nth-term').textContent = `n-th Term: ${nthTerm}`;
+                document.getElementById('geo-sum').textContent = `Sum of Sequence: ${sum}`;
+                document.getElementById('geo-sequence').textContent = `Sequence: ${sequence.join(', ')}`;
+                
+                const resultText = `Geometric Sequence: a₁=${a1}, r=${r}, n=${n}`;
+                addToHistory(resultText);
+            });
+        }
+
+        // Fibonacci Sequence Calculator
+        function setupFibonacciSequenceCalculator() {
+            document.getElementById('fib-calculate').addEventListener('click', () => {
+                const n = parseInt(document.getElementById('fib-n').value);
+                
+                if (isNaN(n) || n <= 0) {
+                    document.getElementById('fib-nth-term').textContent = 'n-th Term: Invalid input';
+                    document.getElementById('fib-sequence').textContent = 'Sequence: Invalid input';
+                    return;
+                }
+                
+                // Generate Fibonacci sequence
+                let fibonacci = [0, 1];
+                for (let i = 2; i < n; i++) {
+                    fibonacci[i] = fibonacci[i - 1] + fibonacci[i - 2];
+                }
+                
+                document.getElementById('fib-nth-term').textContent = `n-th Term: ${fibonacci[n - 1]}`;
+                document.getElementById('fib-sequence').textContent = `Sequence: ${fibonacci.slice(0, n).join(', ')}`;
+                
+                const resultText = `Fibonacci Sequence: n=${n}`;
+                addToHistory(resultText);
+            });
+        }
+
+        // Theme handling
+        themeSelect.addEventListener('change', () => {
+            const theme = themeSelect.value;
+            applyTheme(theme);
+        });
+
+        themeOptions.forEach(option => {
+            option.addEventListener('click', () => {
+                const theme = option.getAttribute('data-theme');
+                themeSelect.value = theme;
+                applyTheme(theme);
+            });
+        });
+
+        function applyTheme(theme) {
+            // Remove previous theme
+            document.body.className = 'themed';
+            document.body.classList.add(`theme-${theme}`);
+
+            // Get font family from CSS variable
+            const computedStyle = getComputedStyle(document.body);
+            const fontFamily = computedStyle.getPropertyValue('--font-family').trim();
+            
+            // Load the font if it's not the default 'Roboto'
+            if (fontFamily !== "'Roboto', sans-serif") {
+                const cleanFontFamily = fontFamily.replace(/'/g, '').replace(/, sans-serif/g, '');
+                loadFont(cleanFontFamily);
             }
-        ]
-    }
-    </script>
+        }
 
-    <!-- Service Worker Code (embedded for this example) -->
-    <script id="sw">
-    // sw.js - Service Worker for Calculator PWA
-    const CACHE_NAME = 'calculator-v1';
-    const urlsToCache = [
-        '/',
-        '/index.html',
-        'https://cdnjs.cloudflare.com/ajax/libs/mathjs/11.5.0/math.min.js',
-        'https://fonts.gstatic.com/s/roboto/v30/KFOmCnqEu92Fr1Mu4mxK.woff2'
-    ];
-
-    self.addEventListener('install', event => {
-        event.waitUntil(
-            caches.open(CACHE_NAME)
-                .then(cache => {
-                    return cache.addAll(urlsToCache);
-                })
-        );
-    });
-
-    self.addEventListener('fetch', event => {
-        event.respondWith(
-            caches.match(event.request)
-                .then(response => {
-                    if (response) {
-                        return response;
-                    }
-                    return fetch(event.request)
-                        .then(response => {
-                            if (!response || response.status !== 200 || response.type !== 'basic') {
-                                return response;
-                            }
-                            
-                            const responseToCache = response.clone();
-                            
-                            caches.open(CACHE_NAME)
-                                .then(cache => {
-                                    cache.put(event.request, responseToCache);
-                                });
-                                
-                            return response;
-                        });
-                })
-        );
-    });
-
-    self.addEventListener('activate', event => {
-        const cacheWhitelist = [CACHE_NAME];
-        event.waitUntil(
-            caches.keys().then(cacheNames => {
-                return Promise.all(
-                    cacheNames.map(cacheName => {
-                        if (cacheWhitelist.indexOf(cacheName) === -1) {
-                            return caches.delete(cacheName);
-                        }
-                    })
-                );
-            })
-        );
-    });
+        // Initialize
+        init();
     </script>
 </body>
 </html>
